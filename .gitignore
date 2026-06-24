@@ -3,3 +3,6 @@ __pycache__/
 public/
 verdict/
 val_out.txt
+# board.json + index.html are generated Pages-only artifacts, never committed
+board.json
+index.html

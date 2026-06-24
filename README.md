@@ -6,12 +6,15 @@ This repo holds **only data + the workflows that gate and publish it** — no ap
 code and no release secrets — so a bad merge here cannot reach the `haid` package or PyPI.
 
 ```
-entries/<github-username>.json   one row per user (updates overwrite that file)
-board.json                       generated: full verified rows; what `haid rank --refresh` reads
-index.html                       generated: the GitHub Pages board
+entries/<github-username>.json   one row per user (updates overwrite that file) — source of truth
 scripts/                         thin wrappers over haid.report.benchmark (installed, pinned)
 .github/workflows/               validate (read-only) → act (privileged) → build (Pages)
 ```
+
+`board.json` (full verified rows; what `haid rank --refresh` reads) and `index.html` are
+**generated, Pages-only artifacts** — they are deployed to GitHub Pages by `build`, never
+committed to `main`. That keeps the protected branch pushable only through validated
+submission PRs. The append-only `entries/` files are the audit trail; the board is derived.
 
 ## How a row lands
 

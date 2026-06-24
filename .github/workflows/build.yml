@@ -1,8 +1,10 @@
 name: build
 
 # On every merge that lands an entry, rebuild board.json + index.html from the entries log
-# and publish to Pages. Trusted: runs on push to main, only this repo's code, over verified
-# data. The bot commit touches board.json/index.html (not entries/), so it does not retrigger.
+# and publish them to GitHub Pages. Trusted: runs on push to main, only this repo's code,
+# over verified data. The board is a Pages-ONLY artifact — it is never committed back to
+# main, so the protected branch (which requires the `validate` check) stays pushable only
+# through validated submission PRs. The source of truth is entries/; the board is derived.
 
 on:
   push:
@@ -12,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
@@ -30,19 +32,9 @@ jobs:
           python-version: "3.x"
       - run: pip install "haid==0.0.1"   # pinned; bump with ladder/combiner versions
 
-      - name: Rebuild board.json + index.html
-        run: python scripts/build_board.py
-
-      - name: Commit the rebuilt board
+      - name: Rebuild the Pages site (board.json + index.html)
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add board.json index.html
-          git diff --cached --quiet || git commit -m "build: rebuild board [skip ci]"
-          git push
-
-      - name: Stage the Pages site
-        run: |
+          python scripts/build_board.py
           mkdir -p public
           cp board.json index.html public/
 
