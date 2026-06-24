@@ -1,0 +1,56 @@
+name: act
+
+# The privileged half of the split. Triggered by `workflow_run` when `validate` finishes,
+# so it ALWAYS runs from this repo's default branch with the real token — and it never
+# checks out or executes any PR content. It reads the verdict artifact and either enables
+# auto-merge or comments the reason.
+#
+# Critical: the PR it acts on is resolved from the run's head SHA (trusted event data), NOT
+# from the artifact. The artifact only supplies ok/reason. So a forged artifact can change a
+# comment's text but cannot make this merge a different or unvalidated PR.
+
+on:
+  workflow_run:
+    workflows: ["validate"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  act:
+    if: ${{ github.event.workflow_run.event == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download the verdict
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: verdict
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Comment or merge
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          # resolve the PR from the trusted run head SHA — never from the artifact
+          pr=$(gh pr list --repo "$REPO" --state open --json number,headRefOid \
+               --jq "[.[] | select(.headRefOid==\"$HEAD_SHA\")][0].number")
+          if [ -z "$pr" ] || [ "$pr" = "null" ]; then
+            echo "no open PR matches head $HEAD_SHA — nothing to do"; exit 0
+          fi
+          ok=$(python -c "import json;print(json.load(open('result.json'))['ok'])")
+          reason=$(python -c "import json;print(json.load(open('result.json'))['reason'])")
+          if [ "$ok" = "True" ]; then
+            echo "PR #$pr validated — merging"
+            gh pr merge "$pr" --repo "$REPO" --squash --auto \
+              || gh pr merge "$pr" --repo "$REPO" --squash
+          else
+            echo "PR #$pr rejected: $reason"
+            gh pr comment "$pr" --repo "$REPO" \
+              --body "❌ Benchmark validation failed: ${reason}"
+          fi

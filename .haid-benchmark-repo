@@ -1,0 +1,2 @@
+This sentinel marks the root of the HAID community-benchmark data repo.
+`haid submit` looks for this file to locate a local checkout. Do not remove.

@@ -1,0 +1,61 @@
+name: validate
+
+# Validates a submission PR. Runs on `pull_request`, so for fork PRs GitHub gives this a
+# READ-ONLY token with NO secrets — it is powerless by construction, which is why it is safe
+# to look at PR content here. It does not comment or merge; it writes a verdict artifact that
+# the separate, privileged `act` workflow (workflow_run) consumes. This split is what keeps
+# the write token away from anything an untrusted PR can influence.
+
+on:
+  pull_request:
+    paths:
+      - "entries/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.x"
+      # PINNED haid: this is what defines the "current" ladder + combiner the gate accepts.
+      # Bump deliberately when those versions change.
+      - run: pip install "haid==0.0.1"
+
+      - name: Validate the changed entry
+        env:
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -uo pipefail
+          mkdir -p verdict
+          files=$(git diff --name-only "$BASE_SHA" HEAD)
+          echo "changed files:"; echo "$files"
+          # a submission PR may touch exactly one entries/<user>.json and nothing else.
+          # (If it touched scripts/ or a workflow, we reject WITHOUT running anything.)
+          if echo "$files" | grep -qvE '^entries/[^/]+\.json$'; then
+            printf '{"ok":false,"reason":"PR changes files other than a single benchmark entry"}' > verdict/result.json
+            exit 0
+          fi
+          if [ "$(echo "$files" | grep -c .)" -ne 1 ]; then
+            printf '{"ok":false,"reason":"PR must add or update exactly one entries/<you>.json"}' > verdict/result.json
+            exit 0
+          fi
+          entry=$(echo "$files" | head -n1)
+          # the validator writes verdict/result.json itself (ok + public-safe reason)
+          python scripts/validate_submission.py --author "$AUTHOR" \
+            --verdict verdict/result.json "$entry" || true
+          cat verdict/result.json
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: verdict
+          path: verdict/
+          retention-days: 3
