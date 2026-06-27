@@ -17,6 +17,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  actions: write   # to dispatch `build` after merge (see note in the merge step)
 
 jobs:
   act:
@@ -49,6 +50,16 @@ jobs:
             echo "PR #$pr validated — merging"
             gh pr merge "$pr" --repo "$REPO" --squash --auto \
               || gh pr merge "$pr" --repo "$REPO" --squash
+            # A push made with GITHUB_TOKEN does NOT trigger other workflows (GitHub's
+            # recursion guard), so the merge above never fires build's `push: entries/**`.
+            # workflow_dispatch is the one exception to that guard, so we publish the board
+            # explicitly. Wait for the merge to actually land first so build sees the entry.
+            echo "waiting for PR #$pr to merge, then publishing the board"
+            for _ in $(seq 1 30); do
+              [ "$(gh pr view "$pr" --repo "$REPO" --json state --jq .state)" = "MERGED" ] && break
+              sleep 2
+            done
+            gh workflow run build.yml --repo "$REPO" --ref main
           else
             echo "PR #$pr rejected: $reason"
             gh pr comment "$pr" --repo "$REPO" \
