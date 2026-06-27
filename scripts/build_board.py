@@ -195,9 +195,7 @@ def render_index(rows: list[dict], generated_at: str) -> str:
     <div class="tag">Self-reported achievement from Claude Code sessions · opt-in</div>
    </div>
   </div>
-  <p class="lead">A public leaderboard of agent-coding sessions. Every row is
-  <strong>self-reported</strong> — the only gate is a plausibility &amp; integrity check — and
-  scores are only comparable within the same anchor-ladder and combiner version.</p>
+  <p class="lead">A public leaderboard of agent-coding sessions.</p>
   <div class="stats">
    <span class="chip"><b>{n}</b><span>{plural}</span></span>
    <span class="chip"><span>updated</span><b>{short_date}</b></span>
@@ -220,8 +218,8 @@ def render_index(rows: list[dict], generated_at: str) -> str:
    it shows exactly what becomes public before anything leaves your machine. Viewing this page
    uploads nothing.
   </div>
-  <p class="fine">Scores are self-reported and unaudited beyond an automated integrity check.
-  Treat the board as a directional signal, not a ranking of skill.</p>
+  <p class="fine">Scores are self-reported and only comparable within the same anchor-ladder
+  and combiner version. Treat the board as a directional signal, not a ranking of skill.</p>
  </footer>
 </div>
 </body></html>
