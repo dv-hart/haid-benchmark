@@ -1,0 +1,74 @@
+{
+ "achievement_total": 380.9311,
+ "cleanliness_pct_median": 0.545,
+ "combiner_config_hash": "c19b35c05e634436",
+ "content_hash": "3216f6746f770dd0b636466fd83e5e6919da03adc2140d9666254bc72d866e6d",
+ "difficulty_rung_median": 6.0,
+ "generated_at": "2026-06-26T20:26:00",
+ "github_username": "dv-hart",
+ "kind": "haid_benchmark_submission",
+ "ladder_versions": {
+  "cleanliness": "e175a9e97394d1d4",
+  "difficulty": "38028a6c1e7977f7"
+ },
+ "normalized_tokens_total": 2478283124.3,
+ "project": "boxBot",
+ "schema_version": "1.1",
+ "scores": {
+  "achievement": {
+   "max": 105.7124,
+   "median": 8.0851,
+   "min": 0.1352,
+   "n": 14,
+   "total": 380.9311
+  },
+  "cleanliness_percentiles": [
+   0.091,
+   0.273,
+   0.273,
+   0.455,
+   0.455,
+   0.455,
+   0.455,
+   0.545,
+   0.545,
+   0.545,
+   0.545,
+   0.636,
+   0.636,
+   0.727
+  ],
+  "difficulty_rungs": [
+   2.0,
+   3.0,
+   3.0,
+   3.0,
+   5.0,
+   5.0,
+   6.0,
+   6.0,
+   6.0,
+   7.0,
+   8.0,
+   8.0,
+   9.0,
+   9.0
+  ],
+  "value": {
+   "max": 409.411222,
+   "median": 60.327647,
+   "min": 0.686885,
+   "n": 14,
+   "total": 1844.180788
+  }
+ },
+ "self_reported": true,
+ "tool_version": "0.0.8",
+ "value_overall": 153.70766,
+ "volume_loc_total": 7996.9,
+ "window": {
+  "n_episodes": 17,
+  "n_no_artifact": 3,
+  "n_scored": 14
+ }
+}
