@@ -96,12 +96,8 @@ def render_index(rows: list[dict], generated_at: str) -> str:
             raw = r.get(key)
             text = html.escape(fmt(raw) if fmt else ("" if raw is None else str(raw)))
             cells.append(f"<td class='{cls}'>{text}</td>")
-        ladders = "·".join(r.get("ladder_versions", {}).values())
-        ver = f"{ladders} / {r.get('combiner_config_hash', '')}"
-        cells.append(f"<td class='ver'>{html.escape(ver)}</td>")
         body.append("<tr>" + "".join(cells) + "</tr>")
     head = "".join(f"<th class='{cls}'>{html.escape(l)}</th>" for _, l, _, cls in _COLS)
-    head += "<th class='ver'>ladders / combiner</th>"
     n = len(rows)
     plural = "entry" if n == 1 else "entries"
     short_date = html.escape(generated_at.replace("T", " ").replace("+00:00", " UTC"))
@@ -173,7 +169,6 @@ def render_index(rows: list[dict], generated_at: str) -> str:
  td.rank.top1 {{ color: var(--gold); }}
  td.rank.top2 {{ color: var(--silver); }}
  td.rank.top3 {{ color: var(--bronze); }}
- th.ver, td.ver {{ color: var(--muted); font-size: 11px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }}
  footer {{ margin-top: 1.5rem; color: var(--muted); font-size: .9rem; }}
  .submit {{
    background: var(--surface); border: 1px solid var(--line); border-radius: .9rem;
@@ -184,7 +179,6 @@ def render_index(rows: list[dict], generated_at: str) -> str:
    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .85em;
    background: var(--accent-soft); color: var(--accent); padding: .1rem .4rem; border-radius: .35rem;
  }}
- .fine {{ margin-top: 1.25rem; font-size: .82rem; line-height: 1.5; }}
 </style></head><body>
 <div class="wrap">
  <header>
@@ -218,8 +212,6 @@ def render_index(rows: list[dict], generated_at: str) -> str:
    it shows exactly what becomes public before anything leaves your machine. Viewing this page
    uploads nothing.
   </div>
-  <p class="fine">Scores are self-reported and only comparable within the same anchor-ladder
-  and combiner version. Treat the board as a directional signal, not a ranking of skill.</p>
  </footer>
 </div>
 </body></html>
