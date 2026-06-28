@@ -22,13 +22,21 @@ ROOT = Path(__file__).resolve().parent.parent
 ENTRIES = ROOT / "entries"
 BOARD_JSON = ROOT / "board.json"
 INDEX_HTML = ROOT / "index.html"
-SCHEMA_VERSION = "1.1"
+# Track the package's current schema (not a hardcoded literal) so a comparability bump can
+# never leave the board stamped with an old version. The board only carries CURRENT-schema rows.
+SCHEMA_VERSION = benchmark.SCHEMA_VERSION
 
 
 def load_rows() -> list[dict]:
     rows = []
     for f in sorted(ENTRIES.glob("*.json")):
         payload = json.loads(f.read_text(encoding="utf-8"))
+        # Drop entries from a superseded schema (e.g. a comparability break) — they are no
+        # longer comparable; the gate rejects new ones, this keeps stragglers off the board.
+        if payload.get("schema_version") not in benchmark.SUPPORTED_SCHEMA:
+            print(f"skip {f.name}: schema {payload.get('schema_version')!r} "
+                  f"not in {sorted(benchmark.SUPPORTED_SCHEMA)}")
+            continue
         benchmark.assert_no_leaks(payload)
         if not benchmark.verify(payload):
             raise SystemExit(f"refusing to build: {f.name} content_hash does not verify")
@@ -53,12 +61,6 @@ def _int(v):
     return f"{round(float(v)):,d}"
 
 
-def _pct(v):
-    if v is None:
-        return ""
-    return f"{float(v) * 100:.0f}%"
-
-
 def _abbrev(v):
     """Compact large counts: 2478283124 -> 2.48B."""
     if v is None:
@@ -79,7 +81,7 @@ _COLS = [
     ("achievement_total", "achievement", lambda v: _num(v, 1), "num"),
     ("volume_loc_total", "volume (LOC)", _int, "num"),
     ("difficulty_rung_median", "difficulty", lambda v: _num(v, 1), "num"),
-    ("cleanliness_pct_median", "cleanliness", _pct, "num"),
+    ("severe_density_median", "defect density", lambda v: _num(v, 3), "num"),
     ("normalized_tokens_total", "norm. tokens", _abbrev, "num"),
 ]
 
