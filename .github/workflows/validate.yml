@@ -27,7 +27,7 @@ jobs:
           python-version: "3.x"
       # PINNED haid: this is what defines the "current" ladder + combiner the gate accepts.
       # Bump deliberately when those versions change.
-      - run: pip install "haid==0.0.7"
+      - run: pip install "haid==0.0.11"
 
       - name: Validate the changed entry
         env:
