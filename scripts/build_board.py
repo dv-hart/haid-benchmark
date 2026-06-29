@@ -208,9 +208,7 @@ def render_index(rows: list[dict], generated_at: str) -> str:
 
  <footer>
   <div class="submit">
-   <b>Add your own.</b> Run <code>pip install haid</code>, then <code>haid submit</code> —
-   it shows exactly what becomes public before anything leaves your machine. Viewing this page
-   uploads nothing.
+   <b>Add your own.</b> Run <code>pip install haid</code>, then <code>haid submit</code>.
   </div>
  </footer>
 </div>
